@@ -28,6 +28,7 @@ public class Search {
 
         public void go3() throws IOException {
                 pwriter = new PrintWriter(new FileWriter("result.csv"));
+                pwriter.println(new StaplesLaptop().fieldNames());
                 for (int i = 1; i <= 36; i ++) {
                         String file = String.format("html%03d.html", i);
                         System.out.println(file);
@@ -48,48 +49,64 @@ public class Search {
         private void oneItem(Element container) {
                 StaplesLaptop item = new StaplesLaptop();
 
-                Element e;
                 Elements es;
  
                 es = container.select("div.item");
                 item.setItemId(es.isEmpty()? "" : es.first().text().split(" ")[1]);
 
                 es = container.select("div.model");
-                item.setModel(es.isEmpty()? "null" : es.first().text());
+                item.setModel(es.isEmpty()? "" : es.first().text());
 
                 es = container.select("div.name a");
-                item.setHref(es.isEmpty()? "null" : es.first().attr("href"));
+                item.setHref(es.isEmpty()? "" : es.first().attr("href"));
 
                 es = container.select("div.reviewssnippet dd.stStars span");
-                item.setRating(es.isEmpty()? "null" : es.first().text());
+                item.setRating(es.isEmpty()? "" : es.first().text());
 
                 es = container.select("div.reviewssnippet dd.stNum span");
-                item.setReviewCount(es.isEmpty()? "null" : es.first().text());
+                item.setReviewCount(es.isEmpty()? "" : es.first().text());
 
                 List<String> specs = new ArrayList<String>();
                 for (Element e2 : container.select("div.name ul.bullets").first().select("li")) {
                         specs.add(e2.text());
                 }
-                item.setSpec(StringUtils.join(specs, ","));
+                item.setSpec(StringUtils.join(specs, "#").replaceAll(",", "~"));
 
-                es = container.select("div.price-container tr.price td");
-                String priceOrig = es.isEmpty()? "null" : es.first().text();
-
-                es = container.select("div.price-container tr.pr0m0 td");
-                String priceSaving = es.isEmpty()? "null" : es.first().text();
-
-                String priceFinal = "null";
-                e = container.select("div.price-container tr.total td b").first();
-                if (e == null) {
-                        e = container.select("div.price-container dl.theprice dd.pis b i").first();
-                        if (e != null) {
-                                priceFinal = e.text();
+                for (Element tr: container.select("div.price-container table.pricenew tr")) {
+                        if (tr.hasClass("pwas")) {
+                                item.setPriceOrig(tr.select("td").first().text());
+                                continue;
                         }
-                } else {
-                        priceFinal = e.text();
+                        if (tr.hasClass("psave")) {
+                                item.setPriceSave(tr.select("td").first().text());
+                                continue;
+                        }
+                        if (tr.hasClass("pr0m0")) {
+                                item.setInstantSave(tr.select("td").first().text());
+                                continue;
+                        }
+                        if (tr.html().contains("Rebate")) {
+                                item.setRebate(tr.select("td").first().text());
+                                continue;
+                        }
+                        if (tr.hasClass("total")) {
+                                item.setPriceFinal(tr.select("td b").first().text());
+                                continue;
+                        }
                 }
+
+                es = container.select("div.price-container dd.pwas");
+                item.setPriceOrig2(es.isEmpty()? "" : es.first().select("del").first().text());
+                
+                es = container.select("div.price-container dd.pis i.price");
+                item.setPriceFinal2(es.isEmpty()? "" : es.first().text());
+
+                es = container.select("div.price-container dd.psave i.price");
+                item.setPriceSave2(es.isEmpty()? "": es.first().text());
+
                 //System.out.println(String.format("%s,%s,%s,%s,%s,%s,%s,%s", itemId, model, href, rating, reviewCount, priceOrig, priceSaving, priceFinal));
                 //pwriter.println(String.format("%s,%s,%s,%s,%s,%s,%s,%s", itemId, model, href, rating, reviewCount, priceOrig, priceSaving, priceFinal));
+                pwriter.println(item.toString());
         }
 
         public void go2() throws IOException {

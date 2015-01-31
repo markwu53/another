@@ -149,4 +149,15 @@ public class StaplesLaptop implements Serializable {
                 this.priceSave2 = priceSave2;
         }
 
+        @Override
+        public String toString() {
+                return itemId + ", " + model + ", " + href + ", " + rating + ", " + reviewCount + ", " + spec + ", "
+                                + priceOrig + ", " + priceSave + ", " + instantSave + ", " + rebate + ", " + priceFinal
+                                + ", " + priceOrig2 + ", " + priceFinal2 + ", " + priceSave2;
+        }
+
+        public String fieldNames() {
+                return "itemId, model, href, rating, reviewCount, spec, priceOrig, priceSave, instantSave, rebate, priceFinal, priceOrig2, priceFinal2, priceSave2";
+        }
+
 }
