@@ -89,7 +89,7 @@ public class Search {
                         priceFinal = e.text();
                 }
                 //System.out.println(String.format("%s,%s,%s,%s,%s,%s,%s,%s", itemId, model, href, rating, reviewCount, priceOrig, priceSaving, priceFinal));
-                pwriter.println(String.format("%s,%s,%s,%s,%s,%s,%s,%s", itemId, model, href, rating, reviewCount, priceOrig, priceSaving, priceFinal));
+                //pwriter.println(String.format("%s,%s,%s,%s,%s,%s,%s,%s", itemId, model, href, rating, reviewCount, priceOrig, priceSaving, priceFinal));
         }
 
         public void go2() throws IOException {
