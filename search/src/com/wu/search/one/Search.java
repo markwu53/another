@@ -5,7 +5,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
@@ -23,7 +25,7 @@ public class Search {
         private PrintWriter pwriter;
 
         private void go() throws IOException {
-                go3();
+                go1_1();
         }
 
         public void go3() throws IOException {
@@ -109,13 +111,20 @@ public class Search {
                 pwriter.println(item.toString());
         }
 
-        public void go2() throws IOException {
+        private void getAll() throws IOException {
+                Integer max = getMaxPage();
+                Set<Integer> pageSet = new HashSet<Integer>();
+                for (int i = 2; i <= max; i ++) {
+                        pageSet.add(i);
+                }
+                for (Integer page: pageSet) {
+                }
                 // http://www.staples.com/Laptops/cat_CL167289?pagenum=2
                 String url = "http://www.staples.com/Laptops/cat_CL167289?pagenum=";
                 // 1-36
-                for (int i = 12; i <= 12; i++) {
-                        String pageUrl = url + i;
-                        String outfile = String.format("html%03d.html", i);
+                for (Integer page: pageSet) {
+                        String pageUrl = url + page;
+                        String outfile = String.format("html%03d.html", page);
                         Document doc;
                         try {
                                 doc = Jsoup.connect(pageUrl).get();
@@ -128,16 +137,42 @@ public class Search {
                         pw.close();
                         System.out.println(outfile);
                 }
+        }
+
+        public void go2() throws IOException {
                 System.out.println("done");
         }
 
-        public void go1() throws IOException {
+        private void getFirstPage() throws IOException {
                 Document doc = Jsoup.connect(urls[0]).get();
                 String html = doc.html();
                 PrintWriter pw = new PrintWriter(new FileWriter("html001.html"));
                 pw.println(html);
                 pw.close();
+        }
+
+        public void go1() throws IOException {
+                getFirstPage();
                 System.out.println("done");
+        }
+ 
+        private Integer getMaxPage() throws IOException {
+                Document doc = Jsoup.parse(new File("html001.html"), null);
+                Elements es = doc.select("div.tabContainer div.perpage").first().select("a");
+                Integer max = 1;
+                for (Element e: es) {
+                        try {
+                                Integer page = Integer.parseInt(e.text());
+                                max = Math.max(max, page);
+                        } catch (NumberFormatException ex) {
+                                continue;
+                        }
+                }
+                return max;
+        }
+
+        public void go1_1() throws IOException {
+                System.out.println("max page: " + getMaxPage());
         }
 
 }
