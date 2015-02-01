@@ -1,6 +1,7 @@
 package com.wu.search.one;
 
 import java.io.Serializable;
+import java.util.Date;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -17,41 +18,25 @@ public class StaplesLaptop implements Serializable {
         private String itemId;
         private String model;
         private String href;
-        private String rating;
-        private String reviewCount;
+        private Double rating;
+        private Integer reviewCount;
         private String spec;
-        private String priceOrig;
-        private String priceSave;
-        private String instantSave;
-        private String rebate;
-        private String priceFinal;
-        private String priceOrig2;
-        private String priceFinal2;
-        private String priceSave2;
+        private Double priceOrig;
+        private Double priceSave;
+        private Double instantSave;
+        private Double rebate;
+        private Double priceFinal;
+        private Double priceOrig2;
+        private Double priceFinal2;
+        private Double priceSave2;
+        private Integer version;
+        private Date updatedDate;
 
         public StaplesLaptop() {
-                itemId = "";
-                model = "";
-                href = "";
-                rating = "";
-                reviewCount = "";
-                spec = "";
-                priceOrig = "";
-                priceSave = "";
-                instantSave = "";
-                rebate = "";
-                priceFinal = "";
-                priceOrig2 = "";
-                priceFinal2 = "";
-                priceSave2 = "";
         }
 
         public Integer getId() {
                 return id;
-        }
-
-        public void setId(Integer id) {
-                this.id = id;
         }
 
         public String getItemId() {
@@ -66,11 +51,11 @@ public class StaplesLaptop implements Serializable {
                 return href;
         }
 
-        public String getRating() {
+        public Double getRating() {
                 return rating;
         }
 
-        public String getReviewCount() {
+        public Integer getReviewCount() {
                 return reviewCount;
         }
 
@@ -78,36 +63,40 @@ public class StaplesLaptop implements Serializable {
                 return spec;
         }
 
-        public String getPriceOrig() {
+        public Double getPriceOrig() {
                 return priceOrig;
         }
 
-        public String getPriceSave() {
+        public Double getPriceSave() {
                 return priceSave;
         }
 
-        public String getInstantSave() {
+        public Double getInstantSave() {
                 return instantSave;
         }
 
-        public String getRebate() {
+        public Double getRebate() {
                 return rebate;
         }
 
-        public String getPriceFinal() {
+        public Double getPriceFinal() {
                 return priceFinal;
         }
 
-        public String getPriceOrig2() {
+        public Double getPriceOrig2() {
                 return priceOrig2;
         }
 
-        public String getPriceFinal2() {
+        public Double getPriceFinal2() {
                 return priceFinal2;
         }
 
-        public String getPriceSave2() {
+        public Double getPriceSave2() {
                 return priceSave2;
+        }
+
+        public void setId(Integer id) {
+                this.id = id;
         }
 
         public void setItemId(String itemId) {
@@ -122,11 +111,11 @@ public class StaplesLaptop implements Serializable {
                 this.href = href;
         }
 
-        public void setRating(String rating) {
+        public void setRating(Double rating) {
                 this.rating = rating;
         }
 
-        public void setReviewCount(String reviewCount) {
+        public void setReviewCount(Integer reviewCount) {
                 this.reviewCount = reviewCount;
         }
 
@@ -134,47 +123,52 @@ public class StaplesLaptop implements Serializable {
                 this.spec = spec;
         }
 
-        public void setPriceOrig(String priceOrig) {
+        public void setPriceOrig(Double priceOrig) {
                 this.priceOrig = priceOrig;
         }
 
-        public void setPriceSave(String priceSave) {
+        public void setPriceSave(Double priceSave) {
                 this.priceSave = priceSave;
         }
 
-        public void setInstantSave(String instantSave) {
+        public void setInstantSave(Double instantSave) {
                 this.instantSave = instantSave;
         }
 
-        public void setRebate(String rebate) {
+        public void setRebate(Double rebate) {
                 this.rebate = rebate;
         }
 
-        public void setPriceFinal(String priceFinal) {
+        public void setPriceFinal(Double priceFinal) {
                 this.priceFinal = priceFinal;
         }
 
-        public void setPriceOrig2(String priceOrig2) {
+        public void setPriceOrig2(Double priceOrig2) {
                 this.priceOrig2 = priceOrig2;
         }
 
-        public void setPriceFinal2(String priceFinal2) {
+        public void setPriceFinal2(Double priceFinal2) {
                 this.priceFinal2 = priceFinal2;
         }
 
-        public void setPriceSave2(String priceSave2) {
+        public void setPriceSave2(Double priceSave2) {
                 this.priceSave2 = priceSave2;
         }
 
-        @Override
-        public String toString() {
-                return itemId + ", " + model + ", " + href + ", " + rating + ", " + reviewCount + ", " + spec + ", "
-                                + priceOrig + ", " + priceSave + ", " + instantSave + ", " + rebate + ", " + priceFinal
-                                + ", " + priceOrig2 + ", " + priceFinal2 + ", " + priceSave2;
+        public Integer getVersion() {
+                return version;
         }
 
-        public static String fieldNames() {
-                return "itemId, model, href, rating, reviewCount, spec, priceOrig, priceSave, instantSave, rebate, priceFinal, priceOrig2, priceFinal2, priceSave2";
+        public Date getUpdatedDate() {
+                return updatedDate;
+        }
+
+        public void setVersion(Integer version) {
+                this.version = version;
+        }
+
+        public void setUpdatedDate(Date updatedDate) {
+                this.updatedDate = updatedDate;
         }
 
 }

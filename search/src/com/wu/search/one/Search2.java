@@ -12,8 +12,6 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -26,19 +24,17 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-public class Search {
+public class Search2 {
 
         public static void main(String[] args) throws IOException {
-                new Search().go();
+                new Search2().go();
         }
 
-        private static final Logger logger = Logger.getLogger(Search.class);
         private static final String[] urls = { "http://www.staples.com/Laptops/cat_CL167289", "" };
         private SessionFactory sessionFactory;
         private Session session;
 
         public void go() throws IOException {
-                PropertyConfigurator.configure("conf/log4j.properties");
                 getAll();
                 initHibernate();
                 deleteAll();
@@ -154,7 +150,7 @@ public class Search {
                         for (Element element : doc.select("#productDetail > li")) {
                                 System.out.println(String.format("processing page %d item %d", page, count));
                                 try {
-                                        StaplesLaptop laptop = oneItem(element);
+                                        StaplesLaptop2 laptop = oneItem(element);
                                         session.persist(laptop);
                                 } catch (NullPointerException e) {
                                         e.printStackTrace();
@@ -169,8 +165,8 @@ public class Search {
                 System.out.println("persist done.");
         }
 
-        private StaplesLaptop oneItem(Element container) {
-                StaplesLaptop item = new StaplesLaptop();
+        private StaplesLaptop2 oneItem(Element container) {
+                StaplesLaptop2 item = new StaplesLaptop2();
 
                 Elements es;
 
@@ -184,104 +180,36 @@ public class Search {
                 item.setHref(es.isEmpty() ? "" : es.first().attr("href"));
 
                 es = container.select("div.reviewssnippet dd.stStars span");
-                if (!es.isEmpty()) {
-                        try {
-                                item.setRating(Double.parseDouble(es.first().text()));
-                        } catch (NumberFormatException ex) {
-                                logger.warn("exception parsing [rating]");
-                        }
-                }
+                item.setRating(es.isEmpty() ? "" : es.first().text());
 
                 es = container.select("div.reviewssnippet dd.stNum span");
-                if (!es.isEmpty()) {
-                        try {
-                                item.setReviewCount(Integer.parseInt(es.first().text()));
-                        } catch (NumberFormatException ex) {
-                                logger.warn("exception parsing [review count]");
-                        }
-                }
+                item.setReviewCount(es.isEmpty() ? "" : es.first().text());
 
-                es = container.select("div.name ul.bullets");
-                if (!es.isEmpty()) {
-                        es = es.first().select("li");
-                        if (!es.isEmpty()) {
-                                List<String> specs = new ArrayList<String>();
-                                for (Element e: es) {
-                                        specs.add(e.text());
-                                }
-                                item.setSpec(StringUtils.join(specs, "\n"));
-                        }
+                List<String> specs = new ArrayList<String>();
+                for (Element e2 : container.select("div.name ul.bullets").first().select("li")) {
+                        specs.add(e2.text());
                 }
+                item.setSpec(StringUtils.join(specs, "#").replaceAll(",", "~"));
 
                 for (Element tr : container.select("div.price-container table.pricenew tr")) {
                         if (tr.hasClass("pwas")) {
-                                es = tr.select("td");
-                                if (!es.isEmpty()) {
-                                        String priceString = es.first().text();
-                                        if (priceString.contains("$")) {
-                                                try {
-                                                        item.setPriceOrig(Double.parseDouble(priceString.split("\\$")[1]));
-                                                } catch (NumberFormatException ex) {
-                                                        logger.warn("exception parsing [original price]");
-                                                }
-                                        }
-                                }
+                                item.setPriceOrig(tr.select("td").first().text());
                                 continue;
                         }
                         if (tr.hasClass("psave")) {
-                                es = tr.select("td");
-                                if (!es.isEmpty()) {
-                                        String priceString = es.first().text();
-                                        if (priceString.contains("$")) {
-                                                try {
-                                                        item.setPriceSave(Double.parseDouble(priceString.split("\\$")[1]));
-                                                } catch (NumberFormatException ex) {
-                                                        logger.warn("exception parsing [save]");
-                                                }
-                                        }
-                                }
+                                item.setPriceSave(tr.select("td").first().text());
                                 continue;
                         }
                         if (tr.hasClass("pr0m0")) {
-                                es = tr.select("td");
-                                if (!es.isEmpty()) {
-                                        String priceString = es.first().text();
-                                        if (priceString.contains("$")) {
-                                                try {
-                                                        item.setInstantSave(Double.parseDouble(priceString.split("\\$")[1]));
-                                                } catch (NumberFormatException ex) {
-                                                        logger.warn("exception parsing [instant saving]");
-                                                }
-                                        }
-                                }
+                                item.setInstantSave(tr.select("td").first().text());
                                 continue;
                         }
                         if (tr.html().contains("Rebate")) {
-                                es = tr.select("td");
-                                if (!es.isEmpty()) {
-                                        String priceString = es.first().text();
-                                        if (priceString.contains("$")) {
-                                                try {
-                                                        item.setRebate(Double.parseDouble(priceString.split("\\$")[1]));
-                                                } catch (NumberFormatException ex) {
-                                                        logger.warn("exception parsing [rebate]");
-                                                }
-                                        }
-                                }
+                                item.setRebate(tr.select("td").first().text());
                                 continue;
                         }
                         if (tr.hasClass("total")) {
-                                es = tr.select("td");
-                                if (!es.isEmpty()) {
-                                        String priceString = es.first().text();
-                                        if (priceString.contains("$")) {
-                                                try {
-                                                        item.setPriceFinal(Double.parseDouble(priceString.split("\\$")[1]));
-                                                } catch (NumberFormatException ex) {
-                                                        logger.warn("exception parsing [price final]");
-                                                }
-                                        }
-                                }
+                                item.setPriceFinal(tr.select("td b").first().text());
                                 continue;
                         }
                 }
