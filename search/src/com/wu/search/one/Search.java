@@ -118,7 +118,8 @@ public class Search {
                         for (Element element : doc.select("#productDetail > li")) {
                                 System.out.println(String.format("processing page %d item %d", page, count));
                                 try {
-                                        oneItem(element);
+                                        StaplesLaptop laptop = oneItem(element);
+                                        pwriter.println(laptop.toString());
                                 } catch (NullPointerException e) {
                                         e.printStackTrace();
                                         System.out.println("------------------------");
