@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.apache.commons.lang3.StringUtils;
+import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -30,29 +31,35 @@ public class Search {
         }
 
         private static final String[] urls = { "http://www.staples.com/Laptops/cat_CL167289", "" };
-        private List<StaplesLaptop> items;
+        private SessionFactory sessionFactory;
+        private Session session;
 
         public void go() throws IOException {
                 // getAll();
-                items = new ArrayList<StaplesLaptop>();
+                initHibernate();
+                deleteAll();
                 parseAll();
-                persist();
+                shutdownHibernate();
         }
 
-        public void persist() {
-                System.out.println("begin persist");
+        public void initHibernate() {
                 Configuration conf = new Configuration().configure();
                 ServiceRegistry sr = new StandardServiceRegistryBuilder().applySettings(conf.getProperties()).build();
-                SessionFactory sf = conf.buildSessionFactory(sr);
-                Session session = sf.openSession();
-                Transaction t = session.beginTransaction();
-                for (StaplesLaptop a: items) {
-                        session.persist(a);
-                }
-                t.commit();
+                sessionFactory = conf.buildSessionFactory(sr);
+                session = sessionFactory.openSession();
+        }
+
+        public void shutdownHibernate() {
                 session.close();
-                sf.close();
-                System.out.println("end persist");
+                sessionFactory.close();
+        }
+
+        public void deleteAll() {
+                Transaction t = session.beginTransaction();
+                Query query = session.createQuery("delete from StaplesLaptop");
+                query.executeUpdate();
+                System.out.println("deleted all");
+                t.commit();
         }
 
         public void getAll() throws IOException {
@@ -135,9 +142,7 @@ public class Search {
                         obtainedPages.add(Integer.parseInt(s));
                 }
 
-                PrintWriter pwriter = new PrintWriter(new FileWriter("working/result.csv"));
-                pwriter.println(StaplesLaptop.fieldNames());
-
+                Transaction t = session.beginTransaction();
                 for (Integer page : obtainedPages) {
                         String file = String.format("working/html%03d.html", page);
                         Document doc = Jsoup.parse(new File(file), null);
@@ -146,8 +151,7 @@ public class Search {
                                 System.out.println(String.format("processing page %d item %d", page, count));
                                 try {
                                         StaplesLaptop laptop = oneItem(element);
-                                        pwriter.println(laptop.toString());
-                                        items.add(laptop);
+                                        session.persist(laptop);
                                 } catch (NullPointerException e) {
                                         e.printStackTrace();
                                         System.out.println("------------------------");
@@ -157,7 +161,7 @@ public class Search {
                                 count++;
                         }
                 }
-                pwriter.close();
+                t.commit();
         }
 
         private StaplesLaptop oneItem(Element container) {
