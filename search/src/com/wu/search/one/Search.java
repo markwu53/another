@@ -5,9 +5,12 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
@@ -23,20 +26,16 @@ public class Search {
 
         private static final String[] urls = { "http://www.staples.com/Laptops/cat_CL167289", "" };
         private PrintWriter pwriter;
-        private Integer maxPage;
-        private Set<Integer> remainingSet;
-        private Set<Integer> obtainedSet;
-
-        public Search() {
-                maxPage = 1;
-                remainingSet = new HashSet<Integer>();
-                obtainedSet = new HashSet<Integer>();
-        }
 
         private void go() throws IOException {
         }
 
         private void parseAll() throws IOException {
+                Properties passingCfg = new Properties();
+                passingCfg.load(this.getClass().getResourceAsStream("passing.cfg"));
+                Set<Integer> obtainedSet = new TreeSet<Integer>(Arrays.asList(passingCfg.getProperty("obtainedSet").split(",")));
+                Arrays.as
+
                 pwriter = new PrintWriter(new FileWriter("result.csv"));
                 pwriter.println(new StaplesLaptop().fieldNames());
 
@@ -46,7 +45,14 @@ public class Search {
                         int count = 1;
                         for (Element element : doc.select("#productDetail > li")) {
                                 System.out.println(String.format("processing page %d item %d", page, count));
-                                oneItem(element);
+                                try {
+                                        oneItem(element);
+                                } catch (NullPointerException e) {
+                                        e.printStackTrace();
+                                        System.out.println("------------------------");
+                                        System.out.println(element.toString());
+                                        System.out.println("------------------------");
+                                }
                                 count ++;
                         }
                 }
@@ -117,7 +123,11 @@ public class Search {
         }
 
         private void getAll() throws IOException {
-                getMaxPage();
+                getFirstPage();
+                Integer maxPage = getMaxPage();
+
+                Set<Integer> remainingSet = new TreeSet<Integer>();
+                Set<Integer> obtainedSet = new TreeSet<Integer>();
 
                 for (int i = 2; i <= maxPage; i++) {
                         remainingSet.add(i);
@@ -144,10 +154,11 @@ public class Search {
                                 System.out.println(outfile);
                         }
                 }
-        }
 
-        public void go2() throws IOException {
-                System.out.println("done");
+                PrintWriter pw = new PrintWriter(new FileWriter("passing.cfg"));
+                pw.println(String.format("maxPage=%d", maxPage));
+                pw.println(String.format("obtainedSet=%s", StringUtils.join(obtainedSet.toArray(), ",")));
+                pw.close();
         }
 
         private void getFirstPage() throws IOException {
@@ -157,13 +168,8 @@ public class Search {
                 pw.println(html);
                 pw.close();
         }
-
-        public void go1() throws IOException {
-                getFirstPage();
-                System.out.println("done");
-        }
  
-        private void getMaxPage() throws IOException {
+        private Integer getMaxPage() throws IOException {
                 Document doc = Jsoup.parse(new File("html001.html"), null);
                 Elements es = doc.select("div.tabContainer div.perpage").first().select("a");
                 Integer max = 1;
@@ -175,10 +181,7 @@ public class Search {
                                 continue;
                         }
                 }
-                maxPage = max;
-        }
-
-        public void go1_1() throws IOException {
+                return max;
         }
 
 }
