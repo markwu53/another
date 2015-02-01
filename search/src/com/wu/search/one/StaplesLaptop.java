@@ -2,9 +2,18 @@ package com.wu.search.one;
 
 import java.io.Serializable;
 
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+
+@Entity
 @SuppressWarnings("serial")
 public class StaplesLaptop implements Serializable {
 
+        @Id
+        @GeneratedValue(strategy = GenerationType.IDENTITY)
+        private Integer id;
         private String itemId;
         private String model;
         private String href;
@@ -35,6 +44,14 @@ public class StaplesLaptop implements Serializable {
                 priceOrig2 = "";
                 priceFinal2 = "";
                 priceSave2 = "";
+        }
+
+        public Integer getId() {
+                return id;
+        }
+
+        public void setId(Integer id) {
+                this.id = id;
         }
 
         public String getItemId() {

@@ -12,6 +12,12 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.apache.commons.lang3.StringUtils;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
+import org.hibernate.cfg.Configuration;
+import org.hibernate.service.ServiceRegistry;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -24,10 +30,29 @@ public class Search {
         }
 
         private static final String[] urls = { "http://www.staples.com/Laptops/cat_CL167289", "" };
+        private List<StaplesLaptop> items;
 
         public void go() throws IOException {
-                getAll();
+                // getAll();
+                items = new ArrayList<StaplesLaptop>();
                 parseAll();
+                persist();
+        }
+
+        public void persist() {
+                System.out.println("begin persist");
+                Configuration conf = new Configuration().configure();
+                ServiceRegistry sr = new StandardServiceRegistryBuilder().applySettings(conf.getProperties()).build();
+                SessionFactory sf = conf.buildSessionFactory(sr);
+                Session session = sf.openSession();
+                Transaction t = session.beginTransaction();
+                for (StaplesLaptop a: items) {
+                        session.persist(a);
+                }
+                t.commit();
+                session.close();
+                sf.close();
+                System.out.println("end persist");
         }
 
         public void getAll() throws IOException {
@@ -122,6 +147,7 @@ public class Search {
                                 try {
                                         StaplesLaptop laptop = oneItem(element);
                                         pwriter.println(laptop.toString());
+                                        items.add(laptop);
                                 } catch (NullPointerException e) {
                                         e.printStackTrace();
                                         System.out.println("------------------------");
