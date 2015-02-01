@@ -26,29 +26,29 @@ public class Search {
         private static final String[] urls = { "http://www.staples.com/Laptops/cat_CL167289", "" };
 
         public void go() throws IOException {
-                //getAll();
+                getAll();
                 parseAll();
         }
 
         public void getAll() throws IOException {
                 getFirstPage();
                 Integer maxPage = getMaxPage();
-        
+
                 Set<Integer> remainingSet = new TreeSet<Integer>();
                 Set<Integer> obtainedSet = new TreeSet<Integer>();
-        
+
                 obtainedSet.add(1);
-        
+
                 for (int i = 2; i <= maxPage; i++) {
                         remainingSet.add(i);
                 }
-        
+
                 String url = "http://www.staples.com/Laptops/cat_CL167289?pagenum=";
                 for (int i = 0; i < 3; i++) {
                         // try 3 times
                         for (Integer page : remainingSet) {
                                 String pageUrl = url + page;
-                                String outfile = String.format("html%03d.html", page);
+                                String outfile = String.format("working/html%03d.html", page);
                                 Document doc;
                                 try {
                                         doc = Jsoup.connect(pageUrl).get();
@@ -67,8 +67,8 @@ public class Search {
                                 break;
                         }
                 }
-        
-                PrintWriter pw = new PrintWriter(new FileWriter("passing.cfg"));
+
+                PrintWriter pw = new PrintWriter(new FileWriter("working/passing.cfg"));
                 pw.println(String.format("maxPage=%d", maxPage));
                 pw.println(String.format("obtainedSet=%s", StringUtils.join(obtainedSet.toArray(), ",")));
                 pw.close();
@@ -77,14 +77,16 @@ public class Search {
         private void getFirstPage() throws IOException {
                 Document doc = Jsoup.connect(urls[0]).get();
                 String html = doc.html();
-                PrintWriter pw = new PrintWriter(new FileWriter("html001.html"));
+                File first = new File("working/html001.html");
+                first.getParentFile().mkdirs();
+                PrintWriter pw = new PrintWriter(first);
                 pw.println(html);
                 pw.close();
-                System.out.println("html001.html");
+                System.out.println("working/html001.html");
         }
 
         private Integer getMaxPage() throws IOException {
-                Document doc = Jsoup.parse(new File("html001.html"), null);
+                Document doc = Jsoup.parse(new File("working/html001.html"), null);
                 Elements es = doc.select("div.tabContainer div.perpage").first().select("a");
                 Integer max = 1;
                 for (Element e : es) {
@@ -100,7 +102,7 @@ public class Search {
 
         public void parseAll() throws IOException {
                 Properties passingCfg = new Properties();
-                FileInputStream fis = new FileInputStream("passing.cfg");
+                FileInputStream fis = new FileInputStream("working/passing.cfg");
                 passingCfg.load(fis);
                 fis.close();
                 List<Integer> obtainedPages = new ArrayList<Integer>();
@@ -108,11 +110,11 @@ public class Search {
                         obtainedPages.add(Integer.parseInt(s));
                 }
 
-                PrintWriter pwriter = new PrintWriter(new FileWriter("result.csv"));
+                PrintWriter pwriter = new PrintWriter(new FileWriter("working/result.csv"));
                 pwriter.println(StaplesLaptop.fieldNames());
 
                 for (Integer page : obtainedPages) {
-                        String file = String.format("html%03d.html", page);
+                        String file = String.format("working/html%03d.html", page);
                         Document doc = Jsoup.parse(new File(file), null);
                         int count = 1;
                         for (Element element : doc.select("#productDetail > li")) {
