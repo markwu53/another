@@ -33,14 +33,14 @@ public class Search {
                 Properties passingCfg = new Properties();
                 passingCfg.load(this.getClass().getResourceAsStream("passing.cfg"));
                 List<Integer> obtainedPages = new ArrayList<Integer>();
-                for (String s: passingCfg.getProperty("obtainedSet").split(",")) {
+                for (String s : passingCfg.getProperty("obtainedSet").split(",")) {
                         obtainedPages.add(Integer.parseInt(s));
                 }
 
                 PrintWriter pwriter = new PrintWriter(new FileWriter("result.csv"));
                 pwriter.println(StaplesLaptop.fieldNames());
 
-                for (Integer page: obtainedPages) {
+                for (Integer page : obtainedPages) {
                         String file = String.format("html%03d.html", page);
                         Document doc = Jsoup.parse(new File(file), null);
                         int count = 1;
@@ -54,7 +54,7 @@ public class Search {
                                         System.out.println(element.toString());
                                         System.out.println("------------------------");
                                 }
-                                count ++;
+                                count++;
                         }
                 }
                 pwriter.close();
@@ -64,21 +64,21 @@ public class Search {
                 StaplesLaptop item = new StaplesLaptop();
 
                 Elements es;
- 
+
                 es = container.select("div.item");
-                item.setItemId(es.isEmpty()? "" : es.first().text().split(" ")[1]);
+                item.setItemId(es.isEmpty() ? "" : es.first().text().split(" ")[1]);
 
                 es = container.select("div.model");
-                item.setModel(es.isEmpty()? "" : es.first().text());
+                item.setModel(es.isEmpty() ? "" : es.first().text());
 
                 es = container.select("div.name a");
-                item.setHref(es.isEmpty()? "" : es.first().attr("href"));
+                item.setHref(es.isEmpty() ? "" : es.first().attr("href"));
 
                 es = container.select("div.reviewssnippet dd.stStars span");
-                item.setRating(es.isEmpty()? "" : es.first().text());
+                item.setRating(es.isEmpty() ? "" : es.first().text());
 
                 es = container.select("div.reviewssnippet dd.stNum span");
-                item.setReviewCount(es.isEmpty()? "" : es.first().text());
+                item.setReviewCount(es.isEmpty() ? "" : es.first().text());
 
                 List<String> specs = new ArrayList<String>();
                 for (Element e2 : container.select("div.name ul.bullets").first().select("li")) {
@@ -86,7 +86,7 @@ public class Search {
                 }
                 item.setSpec(StringUtils.join(specs, "#").replaceAll(",", "~"));
 
-                for (Element tr: container.select("div.price-container table.pricenew tr")) {
+                for (Element tr : container.select("div.price-container table.pricenew tr")) {
                         if (tr.hasClass("pwas")) {
                                 item.setPriceOrig(tr.select("td").first().text());
                                 continue;
@@ -110,17 +110,21 @@ public class Search {
                 }
 
                 es = container.select("div.price-container dd.pwas");
-                item.setPriceOrig2(es.isEmpty()? "" : es.first().select("del").first().text());
-                
+                item.setPriceOrig2(es.isEmpty() ? "" : es.first().select("del").first().text());
+
                 es = container.select("div.price-container dd.pis i.price");
-                item.setPriceFinal2(es.isEmpty()? "" : es.first().text());
+                item.setPriceFinal2(es.isEmpty() ? "" : es.first().text());
 
                 es = container.select("div.price-container dd.psave i.price");
-                item.setPriceSave2(es.isEmpty()? "": es.first().text());
+                item.setPriceSave2(es.isEmpty() ? "" : es.first().text());
 
-                //System.out.println(String.format("%s,%s,%s,%s,%s,%s,%s,%s", itemId, model, href, rating, reviewCount, priceOrig, priceSaving, priceFinal));
-                //pwriter.println(String.format("%s,%s,%s,%s,%s,%s,%s,%s", itemId, model, href, rating, reviewCount, priceOrig, priceSaving, priceFinal));
-                //pwriter.println(item.toString());
+                // System.out.println(String.format("%s,%s,%s,%s,%s,%s,%s,%s",
+                // itemId, model, href, rating, reviewCount, priceOrig,
+                // priceSaving, priceFinal));
+                // pwriter.println(String.format("%s,%s,%s,%s,%s,%s,%s,%s",
+                // itemId, model, href, rating, reviewCount, priceOrig,
+                // priceSaving, priceFinal));
+                // pwriter.println(item.toString());
                 return item;
         }
 
@@ -132,7 +136,7 @@ public class Search {
                 Set<Integer> obtainedSet = new TreeSet<Integer>();
 
                 obtainedSet.add(1);
- 
+
                 for (int i = 2; i <= maxPage; i++) {
                         remainingSet.add(i);
                 }
@@ -172,12 +176,12 @@ public class Search {
                 pw.println(html);
                 pw.close();
         }
- 
+
         private Integer getMaxPage() throws IOException {
                 Document doc = Jsoup.parse(new File("html001.html"), null);
                 Elements es = doc.select("div.tabContainer div.perpage").first().select("a");
                 Integer max = 1;
-                for (Element e: es) {
+                for (Element e : es) {
                         try {
                                 Integer page = Integer.parseInt(e.text());
                                 max = Math.max(max, page);
