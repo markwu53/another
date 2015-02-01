@@ -34,22 +34,18 @@ public class Search {
         }
 
         private void go() throws IOException {
-                go1_1();
         }
 
-        public void go3() throws IOException {
+        private void parseAll() throws IOException {
                 pwriter = new PrintWriter(new FileWriter("result.csv"));
                 pwriter.println(new StaplesLaptop().fieldNames());
-                for (int i = 1; i <= 36; i ++) {
-                        String file = String.format("html%03d.html", i);
-                        System.out.println(file);
+
+                for (Integer page: obtainedSet) {
+                        String file = String.format("html%03d.html", page);
                         Document doc = Jsoup.parse(new File(file), null);
-                        //System.out.println(elements.size());
                         int count = 1;
                         for (Element element : doc.select("#productDetail > li")) {
-                                // System.out.println(element.html());
-                                // System.out.println(element.toString());
-                                System.out.println(count);
+                                System.out.println(String.format("processing page %d item %d", page, count));
                                 oneItem(element);
                                 count ++;
                         }
@@ -121,10 +117,12 @@ public class Search {
         }
 
         private void getAll() throws IOException {
+                getMaxPage();
+
                 for (int i = 2; i <= maxPage; i++) {
                         remainingSet.add(i);
                 }
-                // http://www.staples.com/Laptops/cat_CL167289?pagenum=2
+
                 String url = "http://www.staples.com/Laptops/cat_CL167289?pagenum=";
                 for (int i = 0; i < 3; i++) {
                         // try 3 times
