@@ -29,7 +29,75 @@ public class Search {
                 //parseAll();
         }
 
-        private void parseAll() throws IOException {
+        public void getAll() throws IOException {
+                getFirstPage();
+                Integer maxPage = getMaxPage();
+        
+                Set<Integer> remainingSet = new TreeSet<Integer>();
+                Set<Integer> obtainedSet = new TreeSet<Integer>();
+        
+                obtainedSet.add(1);
+        
+                for (int i = 2; i <= maxPage; i++) {
+                        remainingSet.add(i);
+                }
+        
+                String url = "http://www.staples.com/Laptops/cat_CL167289?pagenum=";
+                for (int i = 0; i < 3; i++) {
+                        // try 3 times
+                        for (Integer page : remainingSet) {
+                                String pageUrl = url + page;
+                                String outfile = String.format("html%03d.html", page);
+                                Document doc;
+                                try {
+                                        doc = Jsoup.connect(pageUrl).get();
+                                        PrintWriter pw = new PrintWriter(new FileWriter(outfile));
+                                        pw.println(doc.html());
+                                        pw.close();
+                                        obtainedSet.add(page);
+                                } catch (IOException e) {
+                                        e.printStackTrace();
+                                        continue;
+                                }
+                                System.out.println(outfile);
+                        }
+                        remainingSet.removeAll(obtainedSet);
+                        if (remainingSet.isEmpty()) {
+                                break;
+                        }
+                }
+        
+                PrintWriter pw = new PrintWriter(new FileWriter("passing.cfg"));
+                pw.println(String.format("maxPage=%d", maxPage));
+                pw.println(String.format("obtainedSet=%s", StringUtils.join(obtainedSet.toArray(), ",")));
+                pw.close();
+        }
+
+        private void getFirstPage() throws IOException {
+                Document doc = Jsoup.connect(urls[0]).get();
+                String html = doc.html();
+                PrintWriter pw = new PrintWriter(new FileWriter("html001.html"));
+                pw.println(html);
+                pw.close();
+                System.out.println("html001.html");
+        }
+
+        private Integer getMaxPage() throws IOException {
+                Document doc = Jsoup.parse(new File("html001.html"), null);
+                Elements es = doc.select("div.tabContainer div.perpage").first().select("a");
+                Integer max = 1;
+                for (Element e : es) {
+                        try {
+                                Integer page = Integer.parseInt(e.text());
+                                max = Math.max(max, page);
+                        } catch (NumberFormatException ex) {
+                                continue;
+                        }
+                }
+                return max;
+        }
+
+        public void parseAll() throws IOException {
                 Properties passingCfg = new Properties();
                 passingCfg.load(this.getClass().getResourceAsStream("passing.cfg"));
                 List<Integer> obtainedPages = new ArrayList<Integer>();
@@ -120,74 +188,6 @@ public class Search {
 
                 // pwriter.println(item.toString());
                 return item;
-        }
-
-        private void getAll() throws IOException {
-                getFirstPage();
-                Integer maxPage = getMaxPage();
-
-                Set<Integer> remainingSet = new TreeSet<Integer>();
-                Set<Integer> obtainedSet = new TreeSet<Integer>();
-
-                obtainedSet.add(1);
-
-                for (int i = 2; i <= maxPage; i++) {
-                        remainingSet.add(i);
-                }
-
-                String url = "http://www.staples.com/Laptops/cat_CL167289?pagenum=";
-                for (int i = 0; i < 3; i++) {
-                        // try 3 times
-                        for (Integer page : remainingSet) {
-                                String pageUrl = url + page;
-                                String outfile = String.format("html%03d.html", page);
-                                Document doc;
-                                try {
-                                        doc = Jsoup.connect(pageUrl).get();
-                                        PrintWriter pw = new PrintWriter(new FileWriter(outfile));
-                                        pw.println(doc.html());
-                                        pw.close();
-                                        obtainedSet.add(page);
-                                } catch (IOException e) {
-                                        e.printStackTrace();
-                                        continue;
-                                }
-                                System.out.println(outfile);
-                        }
-                        remainingSet.removeAll(obtainedSet);
-                        if (remainingSet.isEmpty()) {
-                                break;
-                        }
-                }
-
-                PrintWriter pw = new PrintWriter(new FileWriter("passing.cfg"));
-                pw.println(String.format("maxPage=%d", maxPage));
-                pw.println(String.format("obtainedSet=%s", StringUtils.join(obtainedSet.toArray(), ",")));
-                pw.close();
-        }
-
-        private void getFirstPage() throws IOException {
-                Document doc = Jsoup.connect(urls[0]).get();
-                String html = doc.html();
-                PrintWriter pw = new PrintWriter(new FileWriter("html001.html"));
-                pw.println(html);
-                pw.close();
-                System.out.println("html001.html");
-        }
-
-        private Integer getMaxPage() throws IOException {
-                Document doc = Jsoup.parse(new File("html001.html"), null);
-                Elements es = doc.select("div.tabContainer div.perpage").first().select("a");
-                Integer max = 1;
-                for (Element e : es) {
-                        try {
-                                Integer page = Integer.parseInt(e.text());
-                                max = Math.max(max, page);
-                        } catch (NumberFormatException ex) {
-                                continue;
-                        }
-                }
-                return max;
         }
 
 }
