@@ -26,7 +26,7 @@ public class Search {
 
         private void go() throws IOException {
                 getAll();
-                parseAll();
+                //parseAll();
         }
 
         private void parseAll() throws IOException {
@@ -147,13 +147,16 @@ public class Search {
                                         PrintWriter pw = new PrintWriter(new FileWriter(outfile));
                                         pw.println(doc.html());
                                         pw.close();
-                                        remainingSet.remove(page);
                                         obtainedSet.add(page);
                                 } catch (IOException e) {
                                         e.printStackTrace();
                                         continue;
                                 }
                                 System.out.println(outfile);
+                        }
+                        remainingSet.removeAll(obtainedSet);
+                        if (remainingSet.isEmpty()) {
+                                break;
                         }
                 }
 
@@ -169,6 +172,7 @@ public class Search {
                 PrintWriter pw = new PrintWriter(new FileWriter("html001.html"));
                 pw.println(html);
                 pw.close();
+                System.out.println("html001.html");
         }
 
         private Integer getMaxPage() throws IOException {
