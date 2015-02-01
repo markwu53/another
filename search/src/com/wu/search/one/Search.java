@@ -1,6 +1,7 @@
 package com.wu.search.one;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -25,8 +26,8 @@ public class Search {
         private static final String[] urls = { "http://www.staples.com/Laptops/cat_CL167289", "" };
 
         public void go() throws IOException {
-                getAll();
-                //parseAll();
+                //getAll();
+                parseAll();
         }
 
         public void getAll() throws IOException {
@@ -99,7 +100,9 @@ public class Search {
 
         public void parseAll() throws IOException {
                 Properties passingCfg = new Properties();
-                passingCfg.load(this.getClass().getResourceAsStream("passing.cfg"));
+                FileInputStream fis = new FileInputStream("passing.cfg");
+                passingCfg.load(fis);
+                fis.close();
                 List<Integer> obtainedPages = new ArrayList<Integer>();
                 for (String s : passingCfg.getProperty("obtainedSet").split(",")) {
                         obtainedPages.add(Integer.parseInt(s));
