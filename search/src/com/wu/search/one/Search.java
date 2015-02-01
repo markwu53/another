@@ -118,12 +118,6 @@ public class Search {
                 es = container.select("div.price-container dd.psave i.price");
                 item.setPriceSave2(es.isEmpty() ? "" : es.first().text());
 
-                // System.out.println(String.format("%s,%s,%s,%s,%s,%s,%s,%s",
-                // itemId, model, href, rating, reviewCount, priceOrig,
-                // priceSaving, priceFinal));
-                // pwriter.println(String.format("%s,%s,%s,%s,%s,%s,%s,%s",
-                // itemId, model, href, rating, reviewCount, priceOrig,
-                // priceSaving, priceFinal));
                 // pwriter.println(item.toString());
                 return item;
         }
