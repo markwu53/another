@@ -156,7 +156,7 @@ public class StaplesLaptop implements Serializable {
                                 + ", " + priceOrig2 + ", " + priceFinal2 + ", " + priceSave2;
         }
 
-        public String fieldNames() {
+        public static String fieldNames() {
                 return "itemId, model, href, rating, reviewCount, spec, priceOrig, priceSave, instantSave, rebate, priceFinal, priceOrig2, priceFinal2, priceSave2";
         }
 

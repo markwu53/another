@@ -5,8 +5,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -25,21 +23,24 @@ public class Search {
         }
 
         private static final String[] urls = { "http://www.staples.com/Laptops/cat_CL167289", "" };
-        private PrintWriter pwriter;
 
         private void go() throws IOException {
+                getAll();
+                parseAll();
         }
 
         private void parseAll() throws IOException {
                 Properties passingCfg = new Properties();
                 passingCfg.load(this.getClass().getResourceAsStream("passing.cfg"));
-                Set<Integer> obtainedSet = new TreeSet<Integer>(Arrays.asList(passingCfg.getProperty("obtainedSet").split(",")));
-                Arrays.as
+                List<Integer> obtainedPages = new ArrayList<Integer>();
+                for (String s: passingCfg.getProperty("obtainedSet").split(",")) {
+                        obtainedPages.add(Integer.parseInt(s));
+                }
 
-                pwriter = new PrintWriter(new FileWriter("result.csv"));
-                pwriter.println(new StaplesLaptop().fieldNames());
+                PrintWriter pwriter = new PrintWriter(new FileWriter("result.csv"));
+                pwriter.println(StaplesLaptop.fieldNames());
 
-                for (Integer page: obtainedSet) {
+                for (Integer page: obtainedPages) {
                         String file = String.format("html%03d.html", page);
                         Document doc = Jsoup.parse(new File(file), null);
                         int count = 1;
@@ -59,7 +60,7 @@ public class Search {
                 pwriter.close();
         }
 
-        private void oneItem(Element container) {
+        private StaplesLaptop oneItem(Element container) {
                 StaplesLaptop item = new StaplesLaptop();
 
                 Elements es;
@@ -119,7 +120,8 @@ public class Search {
 
                 //System.out.println(String.format("%s,%s,%s,%s,%s,%s,%s,%s", itemId, model, href, rating, reviewCount, priceOrig, priceSaving, priceFinal));
                 //pwriter.println(String.format("%s,%s,%s,%s,%s,%s,%s,%s", itemId, model, href, rating, reviewCount, priceOrig, priceSaving, priceFinal));
-                pwriter.println(item.toString());
+                //pwriter.println(item.toString());
+                return item;
         }
 
         private void getAll() throws IOException {
@@ -129,6 +131,8 @@ public class Search {
                 Set<Integer> remainingSet = new TreeSet<Integer>();
                 Set<Integer> obtainedSet = new TreeSet<Integer>();
 
+                obtainedSet.add(1);
+ 
                 for (int i = 2; i <= maxPage; i++) {
                         remainingSet.add(i);
                 }
