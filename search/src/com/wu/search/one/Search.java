@@ -35,7 +35,7 @@ public class Search {
         private Session session;
 
         public void go() throws IOException {
-                // getAll();
+                getAll();
                 initHibernate();
                 deleteAll();
                 parseAll();
@@ -162,6 +162,7 @@ public class Search {
                         }
                 }
                 t.commit();
+                System.out.println("persist done.");
         }
 
         private StaplesLaptop oneItem(Element container) {
