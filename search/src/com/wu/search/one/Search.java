@@ -24,7 +24,7 @@ public class Search {
 
         private static final String[] urls = { "http://www.staples.com/Laptops/cat_CL167289", "" };
 
-        private void go() throws IOException {
+        public void go() throws IOException {
                 getAll();
                 //parseAll();
         }
