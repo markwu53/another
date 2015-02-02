@@ -7,7 +7,9 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
@@ -37,13 +39,18 @@ public class Search {
         private static final String[] urls = { "http://www.staples.com/Laptops/cat_CL167289", "" };
         private SessionFactory sessionFactory;
         private Session session;
+        private List<StaplesLaptop> newListing;
+        private Map<String, StaplesLaptop> currentListingMap;
 
         public void go() throws IOException {
                 PropertyConfigurator.configure("conf/log4j.properties");
                 //getAll();
                 initHibernate();
-                deleteAll();
-                parseAll();
+                //deleteAll();
+                //parseAll();
+                //saveAll();
+                processListing();
+                //query();
                 shutdownHibernate();
         }
 
@@ -65,6 +72,36 @@ public class Search {
                 query.executeUpdate();
                 logger.info("deleted all");
                 t.commit();
+        }
+
+        public void saveAll() {
+                Transaction t = session.beginTransaction();
+                for (StaplesLaptop a: newListing) {
+                        session.persist(a);
+                }
+                t.commit();
+                logger.info("all saved");
+        }
+
+        @SuppressWarnings("unchecked")
+        public void query() {
+                //List<StaplesLaptop> list = session.createQuery("from StaplesLaptop where updatedDate=(select max(updatedDate) from StaplesLaptop)").list();
+                //List<StaplesLaptop> list = session.createQuery("from StaplesLaptop").list();
+                Query query = session.createQuery("from StaplesLaptop where itemId=:id order by updatedDate desc");
+                query.setString("id", "1373644");
+                query.setMaxResults(1);
+                List<StaplesLaptop> list = query.list();
+                if (list.isEmpty()) {
+                        logger.info("empty");
+                        return;
+                }
+                StaplesLaptop a = list.get(0);
+                ArchivedLaptop b = new ArchivedLaptop(a);
+                Transaction t = session.beginTransaction();
+                //session.evict(a);
+                session.persist(b);
+                t.commit();
+                logger.info("saved");
         }
 
         public void getAll() throws IOException {
@@ -137,6 +174,75 @@ public class Search {
                 return max;
         }
 
+        @SuppressWarnings("unchecked")
+        public void processListing() {
+                currentListingMap = new HashMap<String, StaplesLaptop>();
+                List<StaplesLaptop> currentListing = session.createQuery("from StaplesLaptop").list();
+                for (StaplesLaptop a: currentListing) {
+                        currentListingMap.put(a.getItemId(), a);
+                }
+                for (StaplesLaptop a: newListing) {
+                        String itemId = a.getItemId();
+                        if (itemId == null) {
+                                continue;
+                        }
+                        logger.debug(String.format("processing item %s", itemId));
+                        if (!currentListingMap.containsKey(itemId)) {
+                                logger.info(String.format("found new item: %s", itemId));
+                                continue;
+                        }
+                        StaplesLaptop b = currentListingMap.get(itemId);
+                        if (a.getPriceFinal2().compareTo(b.getPriceFinal2()) != 0) {
+                                logger.info(String.format("price change for item %s: from %f to %f", itemId, b.getPriceFinal2(), a.getPriceFinal2()));
+                        }
+                }
+
+                logger.info("archive current listing");
+                Transaction t = session.beginTransaction();
+                for (StaplesLaptop a: currentListing) {
+                        Query query = session.createQuery("from ArchivedLaptop where itemId=:itemId order by updatedDate desc")
+                                        .setString("itemId", a.getItemId()).setMaxResults(1);
+                        List<ArchivedLaptop> before = query.list();
+                        if (before.isEmpty()) {
+                                //new item
+                                ArchivedLaptop arch = new ArchivedLaptop(a);
+                                arch.setCreatedDate(a.getUpdatedDate());
+                                arch.setUpdatedDate(a.getUpdatedDate());
+                                session.persist(arch);
+                                continue;
+                        }
+                        ArchivedLaptop b = before.get(0);
+                        if (a.getPriceFinal2().compareTo(b.getPriceFinal2()) != 0) {
+                                // new change
+                                ArchivedLaptop arch = new ArchivedLaptop(a);
+                                arch.setCreatedDate(a.getUpdatedDate());
+                                arch.setUpdatedDate(a.getUpdatedDate());
+                                session.persist(arch);
+                        } else {
+                                // no change, update
+                                b.setUpdatedDate(a.getUpdatedDate());
+                                session.persist(b);
+                        }
+                }
+                t.commit();
+                logger.info("archiving done");
+
+                logger.info("delete current listing");
+                t = session.beginTransaction();
+                Query query = session.createQuery("delete from StaplesLaptop");
+                query.executeUpdate();
+                t.commit();
+
+                logger.info("insert new listing");
+                t = session.beginTransaction();
+                for (StaplesLaptop a: newListing) {
+                        session.persist(a);
+                }
+                t.commit();
+
+                logger.info("process listing done");
+        }
+
         public void parseAll() throws IOException {
                 Properties passingCfg = new Properties();
                 FileInputStream fis = new FileInputStream("working/passing.cfg");
@@ -147,9 +253,9 @@ public class Search {
                         obtainedPages.add(Integer.parseInt(s));
                 }
 
+                newListing = new ArrayList<StaplesLaptop>();
                 Date updatedDate = new Date();
 
-                Transaction t = session.beginTransaction();
                 for (Integer page : obtainedPages) {
                         String file = String.format("working/html%03d.html", page);
                         Document doc = Jsoup.parse(new File(file), null);
@@ -158,13 +264,13 @@ public class Search {
                                 logger.info(String.format("processing page %d item %d", page, count));
                                 StaplesLaptop laptop = oneItem(element);
                                 laptop.setUpdatedDate(updatedDate);
-                                session.persist(laptop);
+                                newListing.add(laptop);
+                                //session.persist(laptop);
                                 //session.save(laptop);
                                 count++;
                         }
                 }
-                t.commit();
-                logger.info("persist done.");
+                logger.info("parsing done.");
         }
 
         private StaplesLaptop oneItem(Element container) {
