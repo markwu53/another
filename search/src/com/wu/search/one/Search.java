@@ -12,8 +12,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
-import javax.persistence.EntityManager;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
@@ -42,7 +40,7 @@ public class Search {
 
         public void go() throws IOException {
                 PropertyConfigurator.configure("conf/log4j.properties");
-                //getAll();
+                getAll();
                 initHibernate();
                 deleteAll();
                 parseAll();
@@ -65,7 +63,7 @@ public class Search {
                 Transaction t = session.beginTransaction();
                 Query query = session.createQuery("delete from StaplesLaptop");
                 query.executeUpdate();
-                System.out.println("deleted all");
+                logger.info("deleted all");
                 t.commit();
         }
 
@@ -99,7 +97,7 @@ public class Search {
                                         e.printStackTrace();
                                         continue;
                                 }
-                                System.out.println(outfile);
+                                logger.info(outfile);
                         }
                         remainingSet.removeAll(obtainedSet);
                         if (remainingSet.isEmpty()) {
@@ -121,7 +119,7 @@ public class Search {
                 PrintWriter pw = new PrintWriter(first);
                 pw.println(html);
                 pw.close();
-                System.out.println("working/html001.html");
+                logger.info("working/html001.html");
         }
 
         private Integer getMaxPage() throws IOException {
@@ -149,22 +147,24 @@ public class Search {
                         obtainedPages.add(Integer.parseInt(s));
                 }
 
+                Date updatedDate = new Date();
+
                 Transaction t = session.beginTransaction();
                 for (Integer page : obtainedPages) {
                         String file = String.format("working/html%03d.html", page);
                         Document doc = Jsoup.parse(new File(file), null);
                         int count = 1;
                         for (Element element : doc.select("#productDetail > li")) {
-                                System.out.println(String.format("processing page %d item %d", page, count));
+                                logger.info(String.format("processing page %d item %d", page, count));
                                 StaplesLaptop laptop = oneItem(element);
-                                laptop.setUpdatedDate(new Date());
+                                laptop.setUpdatedDate(updatedDate);
                                 session.persist(laptop);
                                 //session.save(laptop);
                                 count++;
                         }
                 }
                 t.commit();
-                System.out.println("persist done.");
+                logger.info("persist done.");
         }
 
         private StaplesLaptop oneItem(Element container) {
@@ -280,7 +280,7 @@ public class Search {
                                 continue;
                         }
                         if (tr.hasClass("total")) {
-                                es = tr.select("td");
+                                es = tr.select("td b");
                                 if (!es.isEmpty()) {
                                         String priceString = es.first().text();
                                         if (priceString.contains("$")) {
@@ -328,6 +328,14 @@ public class Search {
                                 } catch (NumberFormatException ex) {
                                         logger.warn("exception parsing [price save 2]");
                                 }
+                        }
+                }
+                
+                es = container.select("div.mathstory-container > script");
+                if (!es.isEmpty()) {
+                        String script = es.toString();
+                        if (script.contains("stockMessage")) {
+                                item.setInStock(false);
                         }
                 }
 

@@ -33,11 +33,13 @@ public class StaplesLaptop implements Serializable {
         private Double priceFinal2;
         private Double priceSave2;
         private Integer version;
+        private Boolean inStock;
         
         @Temporal(TemporalType.TIMESTAMP)
         private Date updatedDate;
 
         public StaplesLaptop() {
+                inStock = true;
         }
 
         public Integer getId() {
@@ -166,6 +168,14 @@ public class StaplesLaptop implements Serializable {
 
         public void setVersion(Integer version) {
                 this.version = version;
+        }
+
+        public Boolean getInStock() {
+                return inStock;
+        }
+
+        public void setInStock(Boolean inStock) {
+                this.inStock = inStock;
         }
 
         public Date getUpdatedDate() {
