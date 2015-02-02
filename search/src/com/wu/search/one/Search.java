@@ -6,10 +6,13 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
+
+import javax.persistence.EntityManager;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
@@ -39,7 +42,7 @@ public class Search {
 
         public void go() throws IOException {
                 PropertyConfigurator.configure("conf/log4j.properties");
-                getAll();
+                //getAll();
                 initHibernate();
                 deleteAll();
                 parseAll();
@@ -153,15 +156,10 @@ public class Search {
                         int count = 1;
                         for (Element element : doc.select("#productDetail > li")) {
                                 System.out.println(String.format("processing page %d item %d", page, count));
-                                try {
-                                        StaplesLaptop laptop = oneItem(element);
-                                        session.persist(laptop);
-                                } catch (NullPointerException e) {
-                                        e.printStackTrace();
-                                        System.out.println("------------------------");
-                                        System.out.println(element.toString());
-                                        System.out.println("------------------------");
-                                }
+                                StaplesLaptop laptop = oneItem(element);
+                                laptop.setUpdatedDate(new Date());
+                                session.persist(laptop);
+                                //session.save(laptop);
                                 count++;
                         }
                 }
@@ -175,13 +173,24 @@ public class Search {
                 Elements es;
 
                 es = container.select("div.item");
-                item.setItemId(es.isEmpty() ? "" : es.first().text().split(" ")[1]);
+                if (!es.isEmpty()) {
+                        String[] splits = es.first().text().split("\\s+");
+                        if (splits.length == 2) {
+                                item.setItemId(splits[1]);
+                        } else {
+                                item.setItemId(splits[splits.length-1]);
+                        }
+                }
 
                 es = container.select("div.model");
-                item.setModel(es.isEmpty() ? "" : es.first().text());
+                if (!es.isEmpty()) {
+                        item.setModel(es.first().text());
+                }
 
                 es = container.select("div.name a");
-                item.setHref(es.isEmpty() ? "" : es.first().attr("href"));
+                if (!es.isEmpty()) {
+                        item.setHref(es.first().attr("href"));
+                }
 
                 es = container.select("div.reviewssnippet dd.stStars span");
                 if (!es.isEmpty()) {
@@ -287,15 +296,41 @@ public class Search {
                 }
 
                 es = container.select("div.price-container dd.pwas");
-                item.setPriceOrig2(es.isEmpty() ? "" : es.first().select("del").first().text());
+                if (!es.isEmpty()) {
+                        String priceString = es.first().text();
+                        if (priceString.contains("$")) {
+                                try {
+                                        item.setPriceFinal(Double.parseDouble(priceString.split("\\$")[1]));
+                                } catch (NumberFormatException ex) {
+                                        logger.warn("exception parsing [price orig 2]");
+                                }
+                        }
+                }
 
                 es = container.select("div.price-container dd.pis i.price");
-                item.setPriceFinal2(es.isEmpty() ? "" : es.first().text());
+                if (!es.isEmpty()) {
+                        String priceString = es.first().text();
+                        if (priceString.contains("$")) {
+                                try {
+                                        item.setPriceFinal2(Double.parseDouble(priceString.split("\\$")[1]));
+                                } catch (NumberFormatException ex) {
+                                        logger.warn("exception parsing [price final 2]");
+                                }
+                        }
+                }
 
                 es = container.select("div.price-container dd.psave i.price");
-                item.setPriceSave2(es.isEmpty() ? "" : es.first().text());
+                if (!es.isEmpty()) {
+                        String priceString = es.first().text();
+                        if (priceString.contains("$")) {
+                                try {
+                                        item.setPriceSave2(Double.parseDouble(priceString.split("\\$")[1]));
+                                } catch (NumberFormatException ex) {
+                                        logger.warn("exception parsing [price save 2]");
+                                }
+                        }
+                }
 
-                // pwriter.println(item.toString());
                 return item;
         }
 
