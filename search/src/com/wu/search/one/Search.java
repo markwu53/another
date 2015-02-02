@@ -40,7 +40,7 @@ public class Search {
 
         public void go() throws IOException {
                 PropertyConfigurator.configure("conf/log4j.properties");
-                getAll();
+                //getAll();
                 initHibernate();
                 deleteAll();
                 parseAll();
@@ -172,6 +172,7 @@ public class Search {
 
                 Elements es;
 
+                /*
                 es = container.select("div.item");
                 if (!es.isEmpty()) {
                         String[] splits = es.first().text().split("\\s+");
@@ -181,15 +182,30 @@ public class Search {
                                 item.setItemId(splits[splits.length-1]);
                         }
                 }
+                */
 
                 es = container.select("div.model");
                 if (!es.isEmpty()) {
-                        item.setModel(es.first().text());
+                        String model = es.first().text();
+                        //"Model T100TAM-C12-GR"
+                        //String[] splits = model.split("\\s+");
+                        //String[] splits = model.split("\\&nbsp\\;");
+                        String[] splits = model.split("Model.");
+                        if (splits.length == 2) {
+                                item.setModel(splits[1]);
+                        } else {
+                                item.setModel(model);
+                        }
                 }
 
                 es = container.select("div.name a");
                 if (!es.isEmpty()) {
-                        item.setHref(es.first().attr("href"));
+                        String href = es.first().attr("href");
+                        item.setHref(href);
+                        String[] splits = href.split("product_");
+                        if (splits.length == 2) {
+                                item.setItemId(splits[1]);
+                        }
                 }
 
                 es = container.select("div.reviewssnippet dd.stStars span");
@@ -300,7 +316,7 @@ public class Search {
                         String priceString = es.first().text();
                         if (priceString.contains("$")) {
                                 try {
-                                        item.setPriceFinal(Double.parseDouble(priceString.split("\\$")[1]));
+                                        item.setPriceOrig2(Double.parseDouble(priceString.split("\\$")[1]));
                                 } catch (NumberFormatException ex) {
                                         logger.warn("exception parsing [price orig 2]");
                                 }
