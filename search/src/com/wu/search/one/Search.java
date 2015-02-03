@@ -44,13 +44,10 @@ public class Search {
 
         public void go() throws IOException {
                 PropertyConfigurator.configure("conf/log4j.properties");
-                //getAll();
+                getAll();
                 initHibernate();
-                //deleteAll();
-                //parseAll();
-                //saveAll();
+                parseAll();
                 processListing();
-                //query();
                 shutdownHibernate();
         }
 
