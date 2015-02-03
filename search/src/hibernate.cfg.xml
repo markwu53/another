@@ -11,6 +11,8 @@
   <property name="hibernate.hbm2ddl.auto">update</property>
   <mapping class="com.wu.search.one.StaplesLaptop"/>
   <mapping class="com.wu.search.one.ArchivedLaptop"/>
-  <mapping class="com.wu.search.test.Product"/>
+  <mapping class="com.wu.search.test.Item"/>
+  <mapping class="com.wu.search.test.Laptop"/>
+  <mapping class="com.wu.search.test.UltraLaptop"/>
  </session-factory>
 </hibernate-configuration>

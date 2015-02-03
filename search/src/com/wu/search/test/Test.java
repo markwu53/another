@@ -34,14 +34,15 @@ public class Test {
        
         public void go1() {
                 initHibernate();
+
+                Laptop item = new Laptop();
+                item.setPrice(300d);
+                item.setScreenSize("12X8.9");
+
                 Transaction t = session.beginTransaction();
-                Product p = new Product();
-                p.setName("laptop");
-                session.persist("Product1", p);
-                Product p2 = new Product();
-                p2.setName("laptop2");
-                session.persist("Product2", p2);
+                session.persist("Item", item);
                 t.commit();
+
                 shutdownHibernate();
         }
 
