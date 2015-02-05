@@ -233,6 +233,12 @@ public class Search {
                 logger.info("insert new listing");
                 t = session.beginTransaction();
                 for (StaplesLaptop a: newListing) {
+                        if (a.getItemId() == null) {
+                                continue;
+                        }
+                        if (a.getPriceFinal2() == null) {
+                                continue;
+                        }
                         session.persist(a);
                 }
                 t.commit();
