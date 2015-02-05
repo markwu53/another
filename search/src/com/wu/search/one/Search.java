@@ -183,6 +183,9 @@ public class Search {
                         if (itemId == null) {
                                 continue;
                         }
+                        if (a.getPriceFinal2() == null) {
+                                continue;
+                        }
                         logger.debug(String.format("processing item %s", itemId));
                         if (!currentListingMap.containsKey(itemId)) {
                                 logger.info(String.format("found new item: %s", itemId));
